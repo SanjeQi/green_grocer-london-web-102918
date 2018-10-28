@@ -1,33 +1,67 @@
+
+
+
 def consolidate_cart(cart)
-  organized_cart = {}
-  count = 0
-  cart.each do |element|
-    element.each do |fruit, hash|
-      organized_cart[fruit] ||= hash
-      organized_cart[fruit][:count] ||= 0
-      organized_cart[fruit][:count] += 1
+  # code here
+  cart_hash = {}
+  cart.each do |cart_item|
+    cart_item.each do |name, data|
+      if cart_hash[name]
+        cart_hash[name][:count] += 1
+      else
+        cart_hash[name] = data
+        cart_hash[name][:count] = 1
+      end
     end
   end
-  return organized_cart
+  cart_hash
 end
 
 def apply_coupons(cart, coupons)
-  coupons.each do |coupon_hash|
-    fruit_name = coupon_hash[:item]
-    new_coupon_hash = {
-      :price => coupon_hash[:cost],
-      :clearance => "true",
-      :count => coupon_hash[:num]
-    }
-    
-     if cart.key?(fruit_name)
-      new_coupon_hash[:clearance] = cart[fruit_name][:clearance]
-      if cart[fruit_name][:count]>= new_coupon_hash[:count]
-        new_coupon_hash[:count] = (cart[fruit_name][:count]/new_coupon_hash[:count]).floor
-        cart[fruit_name][:count] = (coupon_hash[:num])%(cart[fruit_name][:count])
+  # code here
+  new_cart = {}
+  cart.each do |grocery, info|
+    coupons.each do |coupon|
+      if grocery == coupon[:item] && info[:count] >= coupon[:num]
+        cart[grocery][:count] = cart[grocery][:count] - coupon[:num]
+        if new_cart[grocery + " W/COUPON"]
+          new_cart[grocery + " W/COUPON"][:count] += 1
+        else
+          new_cart[grocery + " W/COUPON"] = {:price => coupon[:cost], :clearance => cart[grocery][:clearance], :count => 1}
+        end
       end
-      cart[fruit_name + " W/COUPON"] = new_coupon_hash 
     end
+    new_cart[grocery] = info
+
+  end
+  new_cart
+end
+
+def apply_clearance(cart)
+  # code here
+  clearance_cart = {}
+  cart.each do |item, info|
+    clearance_cart[item] = {}
+    info.each do |datum|
+      if cart[item][:clearance]
+        clearance_cart[item][:price] = (cart[item][:price] * 0.80).round(2)
+      else
+        clearance_cart[item][:price] = cart[item][:price]
+      end
+      clearance_cart[item][:clearance] = cart[item][:clearance]
+      clearance_cart[item][:count] = cart[item][:count]
+
     end
-  return cart
+  end
+  clearance_cart
+end
+
+
+def checkout(cart: [], coupons: [])
+  # code here
+  cart = consolidate_cart(cart: cart)
+  cart = apply_coupons(cart: cart, coupons: coupons)
+  cart = apply_clearance(cart: cart)
+  final = nil
+
 end
